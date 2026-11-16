@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="close_editor_tab_failed">Unable to close the editor tab on your computer</string>
+    <string name="load_editor_tabs_failed">Unable to load the editor tabs from your computer</string>
+    <string name="load_files_failed">Unable to load remote files</string>
+    <string name="load_folder_failed">Unable to load remote folder</string>
+    <string name="open_file_failed">Unable to open remote file</string>
+    <string name="start_launch_failed">Unable to start this launch configuration</string>
+    <string name="stop_launch_failed">Unable to stop this launch configuration</string>
+    <string name="save_file_failed">Unable to save remote file</string>
+    <string name="select_editor_tab_failed">Unable to select the editor tab on your computer</string>
+    <string name="files_empty_folder">No files in this folder</string>
+    <string name="files_empty_loaded">No files loaded</string>
+    <string name="files_project_root">Project</string>
+    <string name="files_title">Files</string>
+    <string name="file_action_redo">Redo</string>
+    <string name="file_action_save">Save</string>
+    <string name="file_action_saving">Saving</string>
+    <string name="file_action_saved">Saved</string>
+    <string name="file_action_undo">Undo</string>
+    <string name="file_action_launch">Launch</string>
+    <string name="file_choose_launch">Choose a launch configuration</string>
+    <string name="file_launch_started">Launch started</string>
+    <string name="file_launch_stop">Stop</string>
+    <string name="file_launch_close">Close</string>
+    <string name="file_remote_conflict">This draft is based on an older version of the file. Review the changes on your computer before saving.</string>
+    <string name="file_select_to_edit">Select a file to edit</string>
+    <string name="file_unavailable">This file can\'t be shown on the phone.</string>
+</resources>

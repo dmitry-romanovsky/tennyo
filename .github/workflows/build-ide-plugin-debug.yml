@@ -1,0 +1,103 @@
+name: Build IDE Plugin Debug
+
+on:
+  workflow_dispatch:
+    inputs:
+      create_release:
+        description: "Create a GitHub prerelease with the debug plugin"
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+env:
+  GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096M -Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.caching=true"
+
+jobs:
+  ide-plugin-debug:
+    name: Build IDE plugin debug ZIP
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Free runner disk space
+        run: |
+          df -h
+          rm -rf .gradle
+          rm -rf .intellijPlatform
+          rm -rf .kotlin
+          rm -rf build
+          rm -rf app/shared/build
+          rm -rf host/intellij/build
+          rm -rf host/engine/build
+          rm -rf host/vscode/build
+          rm -rf app/ios/build
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          df -h
+
+      - name: Gradle setup
+        uses: ./.github/actions/gradle-setup
+
+      - name: Report IDE plugin debug version
+        run: |
+          plugin_version="$(sed -n 's/^pluginVersion=//p' gradle.properties | head -n 1)"
+          test -n "$plugin_version"
+
+          printf 'IDE_PLUGIN_VERSION=%s\n' "$plugin_version" >> "$GITHUB_ENV"
+
+          echo "::notice title=IDE plugin debug::version=$plugin_version"
+          {
+            echo "### IDE plugin debug"
+            echo
+            echo "| Field | Value |"
+            echo "| --- | --- |"
+            echo "| Version | $plugin_version |"
+            echo "| Variant | debug |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Build IDE plugin debug ZIP
+        run: ./gradlew :host:intellij:test :host:intellij:buildIdeDebugPlugin
+
+      - name: Upload IDE plugin debug ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: tennyo-host-v${{ env.IDE_PLUGIN_VERSION }}-debug
+          path: host/intellij/build/distributions/tennyo-host-*-debug.zip
+          if-no-files-found: error
+
+      - name: Create IDE plugin debug GitHub prerelease
+        if: ${{ inputs.create_release }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          plugin_files=(host/intellij/build/distributions/tennyo-host-*-debug.zip)
+          test "${#plugin_files[@]}" -eq 1
+          tag="ide-plugin-v${IDE_PLUGIN_VERSION}-debug"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" "${plugin_files[0]}" --clobber
+          else
+            gh release create "$tag" "${plugin_files[0]}" \
+              --target "$GITHUB_SHA" \
+              --title "Tennyo Companion v${IDE_PLUGIN_VERSION} (debug)" \
+              --generate-notes \
+              --prerelease
+          fi
+
+      - name: Upload IDE plugin debug test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ide-plugin-debug-test-reports
+          path: |
+            host/intellij/build/reports/tests/
+            host/intellij/build/reports/problems/
+            build/reports/problems/
+          if-no-files-found: ignore

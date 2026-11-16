@@ -1,0 +1,146 @@
+name: Unit Tests
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+
+permissions:
+  contents: read
+
+env:
+  GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096M -Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.caching=true"
+
+jobs:
+  ide-companion-unit-tests:
+    name: IDE companion unit tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Gradle setup
+        uses: ./.github/actions/gradle-setup
+
+      - name: Run IDE companion and core unit tests and plugin verifier
+        run: ./gradlew :host:engine:allTests :host:intellij:test :host:intellij:verifyPlugin
+
+      - name: Upload IDE companion unit test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ide-companion-unit-test-reports
+          path: |
+            host/intellij/build/reports/tests/
+            host/engine/build/reports/tests/
+            host/intellij/build/reports/pluginVerifier/
+            host/intellij/build/reports/problems/
+            build/reports/problems/
+          if-no-files-found: ignore
+
+  static-analysis:
+    name: Static analysis (detekt)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Gradle setup
+        uses: ./.github/actions/gradle-setup
+
+      - name: Run detekt
+        run: ./gradlew detekt
+
+      - name: Upload detekt reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: detekt-reports
+          path: |
+            **/build/reports/detekt/
+          if-no-files-found: ignore
+
+  vscode-extension:
+    name: VS Code extension (debug and release VSIX)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Gradle setup
+        uses: ./.github/actions/gradle-setup
+
+      - name: Bundle, smoke-test, and package both VSIX variants
+        run: ./gradlew :host:vscode:packageDebugVsix :host:vscode:packageReleaseVsix
+
+      - name: Upload VSIX
+        uses: actions/upload-artifact@v4
+        with:
+          name: tennyo-host-vscode-vsix
+          path: host/vscode/build/vsix/*.vsix
+          if-no-files-found: error
+
+  # Unsigned release build so R8 and release lint run on every PR instead of first surfacing at a manual release.
+  android-release-apk:
+    name: Android release lint and APK (R8)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Gradle setup
+        uses: ./.github/actions/gradle-setup
+
+      # Chaquopy installs the app's bundled Python packages with a build-machine Python of the same version.
+      - name: Python setup
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Lint and assemble unsigned release APK
+        run: ./gradlew :app:android:lintRelease :app:android:assembleRelease
+
+      - name: Upload release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-release-apk-unsigned
+          path: app/android/build/outputs/apk/release/*.apk
+          if-no-files-found: error
+
+      - name: Upload lint report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-release-lint-report
+          path: app/android/build/reports/lint-results-release.*
+          if-no-files-found: ignore
+
+  mobile-app-unit-tests:
+    name: Mobile app unit tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Gradle setup
+        uses: ./.github/actions/gradle-setup
+
+      - name: Run mobile app, contract and crypto unit tests
+        run: ./gradlew testAndroidHostTest :shared:contract:allTests :shared:crypto:allTests
+
+      - name: Upload mobile app unit test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-app-unit-test-reports
+          path: |
+            app/**/build/reports/tests/
+            shared/contract/build/reports/tests/
+            shared/crypto/build/reports/tests/
+            build/reports/problems/
+          if-no-files-found: ignore

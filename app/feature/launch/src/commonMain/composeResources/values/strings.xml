@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="load_launch_configurations_failed">Unable to load launch configurations</string>
+    <string name="start_launch_failed">Unable to start the launch configuration</string>
+    <string name="stop_launch_failed">Unable to stop the launch configuration</string>
+    <string name="launch_action_stop">Stop</string>
+    <string name="launch_configurations_title">Launch configurations</string>
+    <string name="launch_configurations_empty">No launch configurations available</string>
+    <string name="launch_title">Launch</string>
+    <string name="launch_running">Launching…</string>
+    <string name="launch_status_running">Running</string>
+    <string name="launch_finished">Launch finished</string>
+    <string name="launch_close">Close</string>
+    <string name="launch_action">Launch</string>
+    <string name="launch_action_details">Details</string>
+</resources>

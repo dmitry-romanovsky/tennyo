@@ -1,0 +1,55 @@
+{
+  "name": "tennyo-host",
+  "displayName": "${displayName}",
+  "description": "Pairs this editor with the Tennyo mobile app.",
+  "publisher": "tennyo",
+  "version": "${version}",
+  "license": "MIT",
+  "icon": "icon.png",
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "extensionKind": [
+    "workspace"
+  ],
+  "engines": {
+    "vscode": "^1.126.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "contributes": {
+    "configuration": {
+      "title": "Tennyo",
+      "properties": {
+        "tennyo.acp.agentServers": {
+          "type": "object",
+          "default": {},
+          "markdownDescription": "ACP agents the Tennyo phone app can chat with, as `name: { command, args, env }`. Agents from `~/.jetbrains/acp.json`, Devin Desktop's own agents file and, inside Devin Desktop, the agents it switched on are offered too.",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "command": { "type": "string" },
+              "args": { "type": "array", "items": { "type": "string" } },
+              "env": { "type": "object", "additionalProperties": { "type": "string" } }
+            },
+            "required": ["command"]
+          }
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "tennyo.showCompanionPanel",
+        "title": "Manage Connection",
+        "category": "Tennyo"
+      },
+      {
+        "command": "tennyo.showInAgentsWindow",
+        "title": "Show in the Agents Window",
+        "category": "Tennyo"
+      }
+    ]
+  }
+}

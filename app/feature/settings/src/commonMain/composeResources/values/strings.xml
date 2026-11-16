@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="color_scheme_dynamic">Dynamic</string>
+    <string name="color_scheme_tennyo_theme">Tennyo</string>
+    <string name="theme_mode_auto">System</string>
+    <string name="theme_mode_dark">Dark</string>
+    <string name="theme_mode_light">Light</string>
+    <string name="app_version">Version %1$s</string>
+    <string name="app_name">Tennyo</string>
+    <string name="settings_color_scheme">Color scheme</string>
+    <string name="settings_theme">Theme</string>
+    <string name="settings_editor">Editor</string>
+    <string name="settings_editor_soft_wrap">Wrap long lines in files and diffs</string>
+    <string name="settings_title">Settings</string>
+    <string name="settings_about_action">About Tennyo</string>
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_hotkeys">Hotkeys</string>
+    <string name="settings_about">About</string>
+    <string name="settings_git">Git</string>
+</resources>

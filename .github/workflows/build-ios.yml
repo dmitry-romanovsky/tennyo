@@ -1,0 +1,48 @@
+name: Build iOS
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+
+permissions:
+  contents: read
+
+env:
+  GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096M -Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.caching=true"
+
+jobs:
+  ios-tests:
+    name: iOS tests
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Pinned so a runner image update can't silently change the Kotlin/Native toolchain
+      # underneath this build. Bump when the Xcode version this pins to is removed from
+      # macos-latest (see https://github.com/actions/runner-images for the current lineup).
+      - name: Select Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: "16.2"
+
+      - name: Gradle setup
+        uses: ./.github/actions/gradle-setup
+
+      # Runs the shared commonTest suites on Kotlin/Native, and compiles the device target so
+      # expect/actual breakage on iosArm64 is caught too.
+      - name: Test iOS targets
+        run: ./gradlew :app:shared:iosSimulatorArm64Test :shared:contract:iosSimulatorArm64Test :app:shared:compileKotlinIosArm64
+
+      - name: Upload build reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-test-reports
+          path: |
+            app/shared/build/reports/tests/
+            shared/contract/build/reports/tests/
+            build/reports/problems/
+          if-no-files-found: ignore

@@ -1,0 +1,14 @@
+name: Gradle setup
+description: Set up Java and Gradle for Tennyo builds.
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: "21"
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v5

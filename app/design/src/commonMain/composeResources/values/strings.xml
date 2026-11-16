@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tabs_more_actions">More tab actions</string>
+    <string name="dismiss">Dismiss</string>
+    <string name="failure_with_detail">%1$s: %2$s</string>
+    <string name="full_error_title">Full error</string>
+    <string name="copy_full_error">Copy to clipboard</string>
+    <string name="full_error_copied">Copied</string>
+    <string name="time_just_now">just now</string>
+    <string name="time_minutes_ago">%1$dm ago</string>
+    <string name="time_hours_ago">%1$dh ago</string>
+    <string name="time_days_ago">%1$dd ago</string>
+</resources>
