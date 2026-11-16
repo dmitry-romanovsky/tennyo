@@ -1,0 +1,39 @@
+<idea-plugin allow-bundled-update="true">
+    <name>Tennyo App Host</name>
+    <id>app.tennyo.host</id>
+    <category>Tools Integration</category>
+    <vendor>Tennyo</vendor>
+
+    <description><![CDATA[
+    <p>Tennyo connects the Tennyo mobile app to your IntelliJ IDEA project, so you can keep working from your phone on the same network: project files, terminals, launch configurations, AI agents and Git.</p>
+    <p>Open the Tennyo popup from the status bar, turn on pairing mode, pick this computer on the phone, accept the request, and tap the words the IDE shows. A paired phone reconnects later without the words.</p>
+    <p>Connections are local-network only: pinned TLS, pairing words and a device key, with no server or account in between.</p>
+  ]]></description>
+
+  <dependencies>
+    <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+    <module name="intellij.platform.compose"/>
+    <module name="intellij.terminal.frontend"/>
+    <!-- endregion -->
+  </dependencies>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <applicationService serviceImplementation="app.tennyo.host.intellij.LinkServerService"/>
+        <statusBarWidgetFactory id="app.tennyo.host.StatusBarWidget"
+                                implementation="app.tennyo.host.intellij.HostStatusBarWidgetFactory"
+                                order="first"/>
+        <notificationGroup id="TennyoHost" displayType="BALLOON"
+                           bundle="messages.HostBundle" key="notification.group.tennyo.companion"/>
+    </extensions>
+
+    <resource-bundle>messages.HostBundle</resource-bundle>
+
+    <actions resource-bundle="messages.HostBundle">
+        <action id="app.tennyo.host.ShowPopup"
+                class="app.tennyo.host.intellij.ShowPopupAction"
+                icon="app.tennyo.host.intellij.HostIcons.host">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
+    </actions>
+
+</idea-plugin>

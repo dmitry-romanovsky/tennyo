@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Session notification: shown by the foreground service outside any composition. -->
+    <string name="session_notification_channel_name">Remote sessions</string>
+    <string name="session_notification_channel_description">Shows the active Tennyo remote session</string>
+    <string name="session_notification_default_project">Remote project</string>
+    <string name="session_notification_action_open">Open</string>
+    <string name="session_notification_action_end">End session</string>
+    <string name="session_status_checking_reachability">Checking that your computer is reachable</string>
+    <string name="session_status_waiting_for_approval">Waiting for your computer to approve</string>
+    <string name="session_status_confirm_pairing">Confirm pairing</string>
+    <string name="session_status_confirming_pairing">Confirming pairing</string>
+    <string name="session_status_connecting">Connecting</string>
+    <string name="session_status_connected">Connected</string>
+    <string name="session_status_reconnecting">Reconnecting</string>
+    <string name="session_status_connection_lost">Connection lost</string>
+    <string name="session_status_connection_failed">Connection failed</string>
+    <string name="session_status_pairing_failed">Pairing failed</string>
+    <string name="session_status_disconnected_timeout">Disconnected after a timeout</string>
+    <string name="session_status_ended">Session ended</string>
+    <string name="session_status_ending">Ending session</string>
+    <string name="session_status_background_sync">Connected in background</string>
+    <string name="session_status_background_paused">Android paused the background connection</string>
+</resources>

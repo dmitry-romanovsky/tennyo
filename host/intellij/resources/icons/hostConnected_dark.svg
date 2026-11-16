@@ -1,0 +1,14 @@
+<svg width="16" height="16" viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg">
+  <mask id="statusCutout">
+    <rect width="192" height="192" fill="#FFFFFF"/>
+    <circle cx="150" cy="150" r="42" fill="#000000"/>
+  </mask>
+  <g mask="url(#statusCutout)">
+    <g fill="none" stroke="#3FBF87" stroke-linecap="round">
+      <path d="M154.3 65A66 30 -28 0 1 37.7 127" stroke-width="19"/>
+      <path d="M37.7 127A66 30 -28 0 1 154.3 65" stroke-width="7" opacity="0.6" stroke-dasharray="74 34"/>
+      <circle cx="96" cy="96" r="13" fill="#3FBF87" stroke="none"/>
+    </g>
+  </g>
+  <circle cx="150" cy="150" r="30" fill="#499C54"/>
+</svg>

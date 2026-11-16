@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Git transfer notification: shown by WorkManager outside any composition. -->
+    <string name="git_transfer_channel_name">Git transfers</string>
+    <string name="git_transfer_channel_description">Shows the progress of clones, fetches and pushes</string>
+    <string name="git_transfer_cloning">Cloning repository</string>
+    <string name="git_transfer_fetching">Fetching from remote</string>
+    <string name="git_transfer_pushing">Pushing to remote</string>
+    <string name="git_transfer_cancel">Cancel</string>
+</resources>

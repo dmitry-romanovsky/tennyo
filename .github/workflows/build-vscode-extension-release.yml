@@ -1,0 +1,134 @@
+name: Build VS Code Extension Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish_marketplace:
+        description: "Publish to the Visual Studio Marketplace (VS Code)"
+        required: true
+        default: false
+        type: boolean
+      publish_open_vsx:
+        description: "Publish to Open VSX (Cursor, Devin Desktop)"
+        required: true
+        default: false
+        type: boolean
+      create_release:
+        description: "Create a GitHub release with the release VSIX"
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+env:
+  GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096M -Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.caching=true"
+
+jobs:
+  vscode-extension-release:
+    name: Test and package VS Code extension release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Free runner disk space
+        run: |
+          df -h
+          rm -rf .gradle
+          rm -rf .intellijPlatform
+          rm -rf .kotlin
+          rm -rf build
+          rm -rf app/shared/build
+          rm -rf host/intellij/build
+          rm -rf host/engine/build
+          rm -rf host/vscode/build
+          rm -rf app/ios/build
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          df -h
+
+      - name: Gradle setup
+        uses: ./.github/actions/gradle-setup
+
+      - name: Report VS Code extension release version
+        run: |
+          extension_version="$(sed -n 's/^pluginVersion=//p' gradle.properties | head -n 1)"
+          test -n "$extension_version"
+
+          printf 'VSCODE_EXTENSION_VERSION=%s\n' "$extension_version" >> "$GITHUB_ENV"
+
+          echo "::notice title=VS Code extension release::version=$extension_version"
+          {
+            echo "### VS Code extension release"
+            echo
+            echo "| Field | Value |"
+            echo "| --- | --- |"
+            echo "| Version | $extension_version |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Validate publishing secrets
+        if: ${{ inputs.publish_marketplace || inputs.publish_open_vsx }}
+        env:
+          PUBLISH_MARKETPLACE: ${{ inputs.publish_marketplace }}
+          PUBLISH_OPEN_VSX: ${{ inputs.publish_open_vsx }}
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+          OVSX_PAT: ${{ secrets.OVSX_PAT }}
+        run: |
+          if [ "$PUBLISH_MARKETPLACE" = "true" ]; then test -n "$VSCE_PAT"; fi
+          if [ "$PUBLISH_OPEN_VSX" = "true" ]; then test -n "$OVSX_PAT"; fi
+
+      - name: Build VS Code extension release VSIX
+        run: ./gradlew :host:engine:allTests :host:vscode:detekt :host:vscode:packageReleaseVsix
+
+      - name: Upload VS Code extension release VSIX
+        uses: actions/upload-artifact@v4
+        with:
+          name: tennyo-host-vscode-v${{ env.VSCODE_EXTENSION_VERSION }}-release
+          path: host/vscode/build/vsix/tennyo-host-*-release.vsix
+          if-no-files-found: error
+
+      - name: Publish to the Visual Studio Marketplace
+        if: ${{ inputs.publish_marketplace }}
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: ./gradlew :host:vscode:publishVsixToMarketplace
+
+      - name: Publish to Open VSX
+        if: ${{ inputs.publish_open_vsx }}
+        env:
+          OVSX_PAT: ${{ secrets.OVSX_PAT }}
+        run: ./gradlew :host:vscode:publishVsixToOpenVsx
+
+      - name: Create VS Code extension GitHub release
+        if: ${{ inputs.create_release }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          vsix_files=(host/vscode/build/vsix/tennyo-host-*-release.vsix)
+          test "${#vsix_files[@]}" -eq 1
+          tag="vscode-extension-v${VSCODE_EXTENSION_VERSION}"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" "${vsix_files[0]}" --clobber
+          else
+            gh release create "$tag" "${vsix_files[0]}" \
+              --target "$GITHUB_SHA" \
+              --title "Tennyo Companion for VS Code v${VSCODE_EXTENSION_VERSION}" \
+              --generate-notes
+          fi
+
+      - name: Upload VS Code extension release reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vscode-extension-release-reports
+          path: |
+            host/engine/build/reports/tests/
+            host/vscode/build/reports/detekt/
+            build/reports/problems/
+          if-no-files-found: ignore

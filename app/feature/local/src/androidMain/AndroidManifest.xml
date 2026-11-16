@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools">
+    <application>
+        <!-- Git transfers run as WorkManager foreground work, which Android 14 requires to declare its type. -->
+        <service
+            android:name="androidx.work.impl.foreground.SystemForegroundService"
+            android:foregroundServiceType="dataSync"
+            tools:node="merge" />
+        <receiver
+            android:name="app.tennyo.mobile.feature.local.GitTransferNotificationReceiver"
+            android:exported="false" />
+    </application>
+</manifest>

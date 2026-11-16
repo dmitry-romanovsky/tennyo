@@ -1,0 +1,164 @@
+name: Build IDE Plugin Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "Publish to JetBrains Marketplace after signing"
+        required: true
+        default: false
+        type: boolean
+      create_release:
+        description: "Create a GitHub release with the signed plugin"
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+env:
+  GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096M -Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.caching=true"
+
+jobs:
+  ide-plugin-release:
+    name: Verify and package IDE plugin release
+    runs-on: ubuntu-latest
+    outputs:
+      ide_plugin_version: ${{ steps.report_ide_plugin_release_version.outputs.ide_plugin_version }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Free runner disk space
+        run: |
+          df -h
+          rm -rf .gradle
+          rm -rf .intellijPlatform
+          rm -rf .kotlin
+          rm -rf build
+          rm -rf app/shared/build
+          rm -rf host/intellij/build
+          rm -rf host/engine/build
+          rm -rf host/vscode/build
+          rm -rf app/ios/build
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          df -h
+
+      - name: Gradle setup
+        uses: ./.github/actions/gradle-setup
+
+      - name: Report IDE plugin release version
+        id: report_ide_plugin_release_version
+        run: |
+          plugin_version="$(sed -n 's/^pluginVersion=//p' gradle.properties | head -n 1)"
+          test -n "$plugin_version"
+
+          printf 'IDE_PLUGIN_VERSION=%s\n' "$plugin_version" >> "$GITHUB_ENV"
+          printf 'ide_plugin_version=%s\n' "$plugin_version" >> "$GITHUB_OUTPUT"
+
+          echo "::notice title=IDE plugin release::version=$plugin_version"
+          {
+            echo "### IDE plugin release"
+            echo
+            echo "| Field | Value |"
+            echo "| --- | --- |"
+            echo "| Version | $plugin_version |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Validate IDE plugin signing secrets
+        env:
+          JETBRAINS_SIGNING_CERTIFICATE_CHAIN_BASE64: ${{ secrets.JETBRAINS_SIGNING_CERTIFICATE_CHAIN_BASE64 }}
+          JETBRAINS_SIGNING_PRIVATE_KEY_BASE64: ${{ secrets.JETBRAINS_SIGNING_PRIVATE_KEY_BASE64 }}
+          JETBRAINS_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.JETBRAINS_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: |
+          test -n "$JETBRAINS_SIGNING_CERTIFICATE_CHAIN_BASE64"
+          test -n "$JETBRAINS_SIGNING_PRIVATE_KEY_BASE64"
+          test -n "$JETBRAINS_SIGNING_PRIVATE_KEY_PASSWORD"
+
+      - name: Build signed obfuscated IDE plugin
+        if: ${{ inputs.publish != true }}
+        env:
+          JETBRAINS_SIGNING_CERTIFICATE_CHAIN_BASE64: ${{ secrets.JETBRAINS_SIGNING_CERTIFICATE_CHAIN_BASE64 }}
+          JETBRAINS_SIGNING_PRIVATE_KEY_BASE64: ${{ secrets.JETBRAINS_SIGNING_PRIVATE_KEY_BASE64 }}
+          JETBRAINS_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.JETBRAINS_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: ./gradlew :host:intellij:test :host:intellij:verifyPluginStructure :host:intellij:buildIdeReleasePlugin
+
+      - name: Publish signed obfuscated IDE plugin
+        if: ${{ inputs.publish == true }}
+        env:
+          JETBRAINS_SIGNING_CERTIFICATE_CHAIN_BASE64: ${{ secrets.JETBRAINS_SIGNING_CERTIFICATE_CHAIN_BASE64 }}
+          JETBRAINS_SIGNING_PRIVATE_KEY_BASE64: ${{ secrets.JETBRAINS_SIGNING_PRIVATE_KEY_BASE64 }}
+          JETBRAINS_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.JETBRAINS_SIGNING_PRIVATE_KEY_PASSWORD }}
+          PUBLISH_TOKEN: ${{ secrets.JETBRAINS_MARKETPLACE_TOKEN }}
+        run: |
+          test -n "$PUBLISH_TOKEN"
+          ./gradlew :host:intellij:test :host:intellij:verifyPluginStructure :host:intellij:buildIdeReleasePlugin :host:intellij:publishPlugin
+
+      - name: Upload IDE plugin release mapping handoff
+        uses: actions/upload-artifact@v4
+        with:
+          name: ide-plugin-release-mapping-handoff
+          path: host/intellij/build/outputs/mapping/idePluginRelease/mapping.txt
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Upload IDE plugin release ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: tennyo-host-v${{ env.IDE_PLUGIN_VERSION }}-release
+          path: host/intellij/build/distributions/tennyo-host-*-release-minified-signed.zip
+          if-no-files-found: error
+
+      - name: Create IDE plugin GitHub release
+        if: ${{ inputs.create_release }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          plugin_files=(host/intellij/build/distributions/tennyo-host-*-release-minified-signed.zip)
+          test "${#plugin_files[@]}" -eq 1
+          tag="ide-plugin-v${IDE_PLUGIN_VERSION}"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" "${plugin_files[0]}" --clobber
+          else
+            gh release create "$tag" "${plugin_files[0]}" \
+              --target "$GITHUB_SHA" \
+              --title "Tennyo Companion v${IDE_PLUGIN_VERSION}" \
+              --generate-notes
+          fi
+
+      - name: Upload IDE plugin reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ide-plugin-release-reports
+          path: |
+            host/intellij/build/reports/tests/
+            host/intellij/build/reports/pluginVerifier/
+            host/intellij/build/reports/problems/
+            build/reports/problems/
+          if-no-files-found: ignore
+
+  ide-plugin-release-mappings:
+    name: Upload IDE plugin release mappings
+    runs-on: ubuntu-latest
+    needs: ide-plugin-release
+
+    steps:
+      - name: Download IDE plugin release mapping handoff
+        uses: actions/download-artifact@v4
+        with:
+          name: ide-plugin-release-mapping-handoff
+          path: ide-plugin-release-mapping-handoff
+
+      - name: Upload IDE plugin release mappings
+        uses: actions/upload-artifact@v4
+        with:
+          name: tennyo-host-ide-plugin-v${{ needs.ide-plugin-release.outputs.ide_plugin_version }}-mappings
+          path: ide-plugin-release-mapping-handoff/**/mapping.txt
+          if-no-files-found: error

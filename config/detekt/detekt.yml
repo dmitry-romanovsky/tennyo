@@ -1,0 +1,38 @@
+complexity:
+  CyclomaticComplexMethod:
+    active: true
+    # A reducer or intent handler is one flat `when` over message types; each simple branch is not a decision point.
+    ignoreSimpleWhenEntries: true
+  LargeClass:
+    active: true
+    allowedLines: 399
+  TooManyFunctions:
+    active: true
+    allowedFunctionsPerFile: 24
+    allowedFunctionsPerClass: 24
+    allowedFunctionsPerInterface: 24
+    allowedFunctionsPerObject: 24
+    allowedFunctionsPerEnum: 24
+  LongMethod:
+    active: true
+    allowedLines: 79
+    ignoreAnnotated: [ 'Composable' ]
+  LongParameterList:
+    active: true
+    allowedFunctionParameters: 7
+    allowedConstructorParameters: 7
+    ignoreAnnotated: [ 'Composable' ]
+
+style:
+  MagicNumber:
+    active: true
+    # Previews show sample data; their literal sizes, colors and revisions are the point.
+    ignoreAnnotated: [ 'Preview' ]
+  ReturnCount:
+    active: true
+    # Early `?: return` guards at the top of a function do not count against the limit.
+    excludeGuardClauses: true
+
+naming:
+  FunctionNaming:
+    ignoreAnnotated: [ 'Composable' ]

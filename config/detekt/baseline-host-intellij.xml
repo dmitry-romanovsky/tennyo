@@ -1,0 +1,52 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>ComplexCondition:PopupModel.kt:RealPopupModel$starting || stopping || service.isStartingSession || service.activeSession() != null</ID>
+    <ID>ComplexCondition:TerminalStyleReader.kt:foreground == null &amp;&amp; background == null &amp;&amp; !bold &amp;&amp; !italic</ID>
+    <ID>CyclomaticComplexMethod:PopupContent.kt:@Composable internal fun PopupContent</ID>
+    <ID>DestructuringDeclarationWithTooManyEntries:QrImage.kt:val (left, top, width, height) = matrix.enclosingRectangle ?: intArrayOf(0, 0, matrix.width, matrix.height)</ID>
+    <ID>EmptyFunctionBlock:PopupPreviewModel.kt:PreviewPopupModel${}</ID>
+    <ID>LoopWithTooManyJumpStatements:IntelliJTerminalOutput.kt:while</ID>
+    <ID>MagicNumber:InactiveScreen.kt:500</ID>
+    <ID>MagicNumber:LinkServerService.kt:160</ID>
+    <ID>MagicNumber:LinkServerService.kt:LinkServerService$0xff</ID>
+    <ID>MagicNumber:LinkServerService.kt:LinkServerService$10</ID>
+    <ID>MagicNumber:LinkServerService.kt:LinkServerService$1024</ID>
+    <ID>MagicNumber:LinkServerService.kt:LinkServerService$128</ID>
+    <ID>MagicNumber:LinkServerService.kt:LinkServerService$16</ID>
+    <ID>MagicNumber:LinkServerService.kt:LinkServerService$168</ID>
+    <ID>MagicNumber:LinkServerService.kt:LinkServerService$172</ID>
+    <ID>MagicNumber:LinkServerService.kt:LinkServerService$192</ID>
+    <ID>MagicNumber:LinkServerService.kt:LinkServerService$30</ID>
+    <ID>MagicNumber:LinkServerService.kt:LinkServerService$31</ID>
+    <ID>MagicNumber:LinkServerService.kt:LinkServerService$32</ID>
+    <ID>MagicNumber:PopupControls.kt:0.15f</ID>
+    <ID>MagicNumber:PopupControls.kt:0.2f</ID>
+    <ID>MagicNumber:PopupControls.kt:0.8f</ID>
+    <ID>MagicNumber:PopupControls.kt:500</ID>
+    <ID>MagicNumber:PopupTheme.kt:0.01f</ID>
+    <ID>MagicNumber:PopupTheme.kt:0.07f</ID>
+    <ID>MagicNumber:PopupTheme.kt:0.1f</ID>
+    <ID>MagicNumber:PopupTheme.kt:0.2f</ID>
+    <ID>MagicNumber:PopupTheme.kt:0.6f</ID>
+    <ID>MagicNumber:PopupTheme.kt:0.7f</ID>
+    <ID>MagicNumber:PopupTheme.kt:3</ID>
+    <ID>MagicNumber:PopupTheme.kt:4</ID>
+    <ID>MaxLineLength:DnsSdAdvertisement.kt:DnsSdAdvertisement$"dns-sd advertised service=${companionId.debugShortId()} host=${host.debugQuotedOrNone()} port=$port registrations=${servicesByCompanionId.size}"</ID>
+    <ID>MaxLineLength:HostGlobalSettings.kt:HostGlobalSettings$"global discovery blocked attacker=${attackerSource.debugQuotedOrNone()} message=${message.debugQuotedOrNone()}"</ID>
+    <ID>MaxLineLength:IntelliJTerminalPort.kt:IntelliJTerminalPort$"Unable to close optional IDE terminal tab $terminalId for Tennyo Companion session in ${project.name}"</ID>
+    <ID>MaxLineLength:IntelliJTerminalPort.kt:IntelliJTerminalPort$"Unable to read optional IDE terminal snapshot $terminalId for Tennyo Companion session in ${project.name}"</ID>
+    <ID>MaxLineLength:IntelliJTerminalPort.kt:IntelliJTerminalPort$"Unable to select optional IDE terminal tab $terminalId for Tennyo Companion session in ${project.name}"</ID>
+    <ID>MaxLineLength:IntelliJTerminalPort.kt:IntelliJTerminalPort$"Unable to write optional IDE terminal input to $terminalId for Tennyo Companion session in ${project.name}"</ID>
+    <ID>MaxLineLength:LinkServerService.kt:LinkServerService$LOG.info("Tennyo remote TLS listener bound on ${channels.size} private address(es), port=$boundPort")</ID>
+    <ID>MaxLineLength:WaitingScreen.kt:val bundleKey = if (osLabel == "macOS") "dialog.message.macOS.firewall.guidance" else "dialog.message.windows.firewall.guidance"</ID>
+    <ID>ReturnCount:IntelliJTerminalOutput.kt:IntelliJTerminalOutput$private fun emitCoalescedFrame</ID>
+    <ID>ReturnCount:IntelliJTerminalPort.kt:IntelliJTerminalPort$override fun create: TerminalTab?</ID>
+    <ID>TooGenericExceptionCaught:LinkHttpHandler.kt:LinkHttpHandler$throwable: Throwable</ID>
+    <ID>TooGenericExceptionCaught:LinkServerService.kt:LinkServerService$failure: Throwable</ID>
+    <ID>TooManyFunctions:HostGlobalSettings.kt:HostGlobalSettings : PersistentStateComponentHostSettingsStore</ID>
+    <ID>TooManyFunctions:HostSessionService.kt:HostSessionService : DisposableDiscoveryProject</ID>
+    <ID>TopLevelPropertyNaming:PopupTheme.kt:internal const val popupScreenTransitionDurationMs = 300</ID>
+  </CurrentIssues>
+</SmellBaseline>

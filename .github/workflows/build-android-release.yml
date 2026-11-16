@@ -1,0 +1,172 @@
+name: Build Android Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      create_release:
+        description: "Create a GitHub release with the signed Android build"
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+env:
+  GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096M -Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.caching=true"
+
+jobs:
+  android-release:
+    name: Build Android release APK and AAB
+    runs-on: ubuntu-latest
+    outputs:
+      android_version_name: ${{ steps.report_android_release_version.outputs.android_version_name }}
+      android_version_code: ${{ steps.report_android_release_version.outputs.android_version_code }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Free runner disk space
+        run: |
+          df -h
+          rm -rf .gradle
+          rm -rf .intellijPlatform
+          rm -rf .kotlin
+          rm -rf build
+          rm -rf app/shared/build
+          rm -rf app/android/build
+          rm -rf host/intellij/build
+          rm -rf host/engine/build
+          rm -rf host/vscode/build
+          rm -rf app/ios/build
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          df -h
+
+      - name: Gradle setup
+        uses: ./.github/actions/gradle-setup
+
+      # Chaquopy installs the app's bundled Python packages with a build-machine Python of the same version.
+      - name: Python setup
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Report Android release version
+        id: report_android_release_version
+        run: |
+          android_version_name="$(sed -n 's/^tennyoVersionName=\(.*\)/\1/p' gradle.properties | head -n 1)"
+          android_version_code="$(sed -n 's/^tennyoVersionCode=\([0-9][0-9]*\)/\1/p' gradle.properties | head -n 1)"
+
+          test -n "$android_version_name"
+          test -n "$android_version_code"
+
+          printf 'ANDROID_VERSION_NAME=%s\n' "$android_version_name" >> "$GITHUB_ENV"
+          printf 'ANDROID_VERSION_CODE=%s\n' "$android_version_code" >> "$GITHUB_ENV"
+          printf 'android_version_name=%s\n' "$android_version_name" >> "$GITHUB_OUTPUT"
+          printf 'android_version_code=%s\n' "$android_version_code" >> "$GITHUB_OUTPUT"
+
+          echo "::notice title=Android release::versionName=$android_version_name appCode=$android_version_code"
+          {
+            echo "### Android release"
+            echo
+            echo "| Field | Value |"
+            echo "| --- | --- |"
+            echo "| Version name | $android_version_name |"
+            echo "| App code (versionCode) | $android_version_code |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Prepare Android release signing
+        env:
+          ANDROID_RELEASE_KEYSTORE_BASE64: ${{ secrets.ANDROID_RELEASE_KEYSTORE_BASE64 }}
+          ANDROID_RELEASE_STORE_PASSWORD: ${{ secrets.ANDROID_RELEASE_STORE_PASSWORD }}
+          ANDROID_RELEASE_KEY_ALIAS: ${{ secrets.ANDROID_RELEASE_KEY_ALIAS }}
+          ANDROID_RELEASE_KEY_PASSWORD: ${{ secrets.ANDROID_RELEASE_KEY_PASSWORD }}
+        run: |
+          test -n "$ANDROID_RELEASE_KEYSTORE_BASE64"
+          test -n "$ANDROID_RELEASE_STORE_PASSWORD"
+          test -n "$ANDROID_RELEASE_KEY_ALIAS"
+          test -n "$ANDROID_RELEASE_KEY_PASSWORD"
+
+          signing_dir="$RUNNER_TEMP/android-signing"
+          mkdir -p "$signing_dir"
+          keystore_file="$signing_dir/release-keystore.jks"
+          printf '%s' "$ANDROID_RELEASE_KEYSTORE_BASE64" | base64 --decode > "$keystore_file"
+          printf 'ANDROID_RELEASE_STORE_FILE=%s\n' "$keystore_file" >> "$GITHUB_ENV"
+
+      - name: Build signed Android release
+        env:
+          ANDROID_RELEASE_STORE_PASSWORD: ${{ secrets.ANDROID_RELEASE_STORE_PASSWORD }}
+          ANDROID_RELEASE_KEY_ALIAS: ${{ secrets.ANDROID_RELEASE_KEY_ALIAS }}
+          ANDROID_RELEASE_KEY_PASSWORD: ${{ secrets.ANDROID_RELEASE_KEY_PASSWORD }}
+        run: ./gradlew :app:shared:testAndroidHostTest :app:android:assembleRelease :app:android:bundleRelease
+
+      - name: Prepare named Android release files
+        run: |
+          mkdir -p release-assets
+          apk_files=(app/android/build/outputs/apk/release/*.apk)
+          aab_files=(app/android/build/outputs/bundle/release/*.aab)
+          test "${#apk_files[@]}" -eq 1
+          test "${#aab_files[@]}" -eq 1
+          cp "${apk_files[0]}" "release-assets/tennyo-android-v${ANDROID_VERSION_NAME}-${ANDROID_VERSION_CODE}-release-minified.apk"
+          cp "${aab_files[0]}" "release-assets/tennyo-android-v${ANDROID_VERSION_NAME}-${ANDROID_VERSION_CODE}-release-minified.aab"
+
+      - name: Upload Android release builds
+        uses: actions/upload-artifact@v4
+        with:
+          name: tennyo-android-v${{ env.ANDROID_VERSION_NAME }}-${{ env.ANDROID_VERSION_CODE }}-release
+          path: release-assets/
+          if-no-files-found: error
+
+      - name: Create Android GitHub release
+        if: ${{ inputs.create_release }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="android-v${ANDROID_VERSION_NAME}"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" release-assets/* --clobber
+          else
+            gh release create "$tag" release-assets/* \
+              --target "$GITHUB_SHA" \
+              --title "Tennyo Android v${ANDROID_VERSION_NAME}" \
+              --generate-notes
+          fi
+
+      - name: Upload Android release mapping handoff
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-release-mapping-handoff
+          path: app/android/build/outputs/mapping/release/mapping.txt
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Upload Android test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-test-reports
+          path: app/shared/build/reports/tests/
+          if-no-files-found: ignore
+
+  android-release-mappings:
+    name: Upload Android release mappings
+    runs-on: ubuntu-latest
+    needs: android-release
+
+    steps:
+      - name: Download Android release mapping handoff
+        uses: actions/download-artifact@v4
+        with:
+          name: android-release-mapping-handoff
+          path: android-release-mapping-handoff
+
+      - name: Upload Android release mappings
+        uses: actions/upload-artifact@v4
+        with:
+          name: tennyo-android-v${{ needs.android-release.outputs.android_version_name }}-${{ needs.android-release.outputs.android_version_code }}-mappings
+          path: android-release-mapping-handoff/**/mapping.txt
+          if-no-files-found: error
