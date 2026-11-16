@@ -48,7 +48,7 @@ jobs:
 
       # Chaquopy installs the app's bundled Python packages with a build-machine Python of the same version.
       - name: Python setup
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.13"
 
