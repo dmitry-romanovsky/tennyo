@@ -87,7 +87,7 @@ jobs:
         run: ./gradlew :host:engine:allTests :host:vscode:detekt :host:vscode:packageReleaseVsix
 
       - name: Upload VS Code extension release VSIX
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: tennyo-host-vscode-v${{ env.VSCODE_EXTENSION_VERSION }}-release
           path: host/vscode/build/vsix/tennyo-host-*-release.vsix
@@ -124,7 +124,7 @@ jobs:
 
       - name: Upload VS Code extension release reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: vscode-extension-release-reports
           path: |

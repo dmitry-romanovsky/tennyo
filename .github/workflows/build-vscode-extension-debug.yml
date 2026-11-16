@@ -67,7 +67,7 @@ jobs:
         run: ./gradlew :host:engine:allTests :host:vscode:packageDebugVsix
 
       - name: Upload VS Code extension debug VSIX
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: tennyo-host-vscode-v${{ env.VSCODE_EXTENSION_VERSION }}-debug
           path: host/vscode/build/vsix/tennyo-host-*-debug.vsix
@@ -93,7 +93,7 @@ jobs:
 
       - name: Upload VS Code extension debug test reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: vscode-extension-debug-test-reports
           path: |

@@ -115,7 +115,7 @@ jobs:
           cp "${aab_files[0]}" "release-assets/tennyo-android-v${ANDROID_VERSION_NAME}-${ANDROID_VERSION_CODE}-release-minified.aab"
 
       - name: Upload Android release builds
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: tennyo-android-v${{ env.ANDROID_VERSION_NAME }}-${{ env.ANDROID_VERSION_CODE }}-release
           path: release-assets/
@@ -137,7 +137,7 @@ jobs:
           fi
 
       - name: Upload Android release mapping handoff
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: android-release-mapping-handoff
           path: app/android/build/outputs/mapping/release/mapping.txt
@@ -146,7 +146,7 @@ jobs:
 
       - name: Upload Android test reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: android-test-reports
           path: app/shared/build/reports/tests/
@@ -165,7 +165,7 @@ jobs:
           path: android-release-mapping-handoff
 
       - name: Upload Android release mappings
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: tennyo-android-v${{ needs.android-release.outputs.android_version_name }}-${{ needs.android-release.outputs.android_version_code }}-mappings
           path: android-release-mapping-handoff/**/mapping.txt

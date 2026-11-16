@@ -101,7 +101,7 @@ jobs:
           ./gradlew :host:intellij:test :host:intellij:verifyPluginStructure :host:intellij:buildIdeReleasePlugin :host:intellij:publishPlugin
 
       - name: Upload IDE plugin release mapping handoff
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ide-plugin-release-mapping-handoff
           path: host/intellij/build/outputs/mapping/idePluginRelease/mapping.txt
@@ -109,7 +109,7 @@ jobs:
           retention-days: 1
 
       - name: Upload IDE plugin release ZIP
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: tennyo-host-v${{ env.IDE_PLUGIN_VERSION }}-release
           path: host/intellij/build/distributions/tennyo-host-*-release-minified-signed.zip
@@ -134,7 +134,7 @@ jobs:
 
       - name: Upload IDE plugin reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ide-plugin-release-reports
           path: |
@@ -157,7 +157,7 @@ jobs:
           path: ide-plugin-release-mapping-handoff
 
       - name: Upload IDE plugin release mappings
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: tennyo-host-ide-plugin-v${{ needs.ide-plugin-release.outputs.ide_plugin_version }}-mappings
           path: ide-plugin-release-mapping-handoff/**/mapping.txt

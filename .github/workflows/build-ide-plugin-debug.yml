@@ -67,7 +67,7 @@ jobs:
         run: ./gradlew :host:intellij:test :host:intellij:buildIdeDebugPlugin
 
       - name: Upload IDE plugin debug ZIP
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: tennyo-host-v${{ env.IDE_PLUGIN_VERSION }}-debug
           path: host/intellij/build/distributions/tennyo-host-*-debug.zip
@@ -93,7 +93,7 @@ jobs:
 
       - name: Upload IDE plugin debug test reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ide-plugin-debug-test-reports
           path: |
