@@ -151,7 +151,7 @@ jobs:
 
     steps:
       - name: Download IDE plugin release mapping handoff
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: ide-plugin-release-mapping-handoff
           path: ide-plugin-release-mapping-handoff
