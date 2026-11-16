@@ -18,7 +18,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # Pinned so a runner image update can't silently change the Kotlin/Native toolchain
       # underneath this build. Bump when the Xcode version this pins to is removed from
